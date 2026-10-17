@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Полное руководство: Flask-сайт с нуля</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    line-height: 1.75;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 100px;
+  }
+
+  h1 { color: #e94560; font-size: 2rem; }
+  h2 {
+    color: #58a6ff;
+    margin-top: 64px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #30363d;
+    scroll-margin-top: 20px;
+    font-size: 1.6rem;
+  }
+  h3 { color: #7ee787; margin-top: 32px; font-size: 1.25rem; }
+  h4 { color: #ffa657; margin-top: 22px; font-size: 1.05rem; }
+
+  p { margin: 10px 0; }
+
+  /* ====== БЛОК «ПЕЧАТАЙ РУКАМИ» — нельзя копировать ====== */
+  .code-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #161b22;
+    color: #79c0ff;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    padding: 16px 20px;
+    border: 1px solid #30363d;
+    border-left: 3px solid #e94560;
+    border-radius: 8px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+  }
+  .code-btn::before {
+    content: "🔒 напечатай руками";
+    position: absolute;
+    top: 6px; right: 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.7rem;
+    color: #6e7681;
+    background: #0d1117;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #30363d;
+    letter-spacing: 0.5px;
+  }
+
+  /* ====== БОЛЬШОЙ БЛОК — можно скопировать кликом ====== */
+  .code-copy {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #0f1a24;
+    color: #a5d6ff;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    padding: 16px 20px;
+    border: 1px solid #1f6feb;
+    border-left: 3px solid #58a6ff;
+    border-radius: 8px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .code-copy::before {
+    content: "📋 большой блок — клик чтобы скопировать";
+    position: absolute;
+    top: 6px; right: 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.7rem;
+    color: #58a6ff;
+    background: #0d1117;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #1f6feb;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+  }
+  .code-copy:hover {
+    background: #152535;
+    border-color: #58a6ff;
+  }
+  .code-copy.copied::before {
+    content: "✅ скопировано!";
+    color: #7ee787;
+    border-color: #7ee787;
+  }
+
+  /* ====== Шаги ====== */
+  .step {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    border-left: 4px solid #7ee787;
+  }
+  .step-num {
+    display: inline-block;
+    background: #7ee787;
+    color: #0d1117;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+    margin-right: 10px;
+  }
+
+  /* ====== Инфоблоки ====== */
+  .tip, .warn, .check, .why, .think, .analogy, .theory, .example, .anti {
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 16px 0;
+    border-left: 4px solid;
+  }
+  .tip     { background: #1f3a2f; border-color: #7ee787; }
+  .warn    { background: #3a2a1f; border-color: #f0883e; }
+  .check   { background: #1a2a4a; border-color: #58a6ff; }
+  .why     { background: #2a1f3a; border-color: #bc8cff; }
+  .think   { background: #1f2a3a; border-color: #ffa657; }
+  .analogy { background: #16232a; border-color: #56d4dd; }
+  .theory  { background: #1a2330; border-color: #6e9cff; }
+  .example { background: #1f2a1f; border-color: #7ee787; }
+  .anti    { background: #2a1f1f; border-color: #ff7b72; }
+
+  .tip::before     { content: "💡 "; }
+  .warn::before    { content: "⚠️ "; }
+  .check::before   { content: "✅ "; }
+  .why::before     { content: "🎯 Зачем это: "; color: #bc8cff; font-weight: 700; }
+  .think::before   { content: "🧠 Подумай: "; color: #ffa657; font-weight: 700; }
+  .analogy::before { content: "🌍 Аналогия: "; color: #56d4dd; font-weight: 700; }
+  .theory::before  { content: "📚 Теория: "; color: #6e9cff; font-weight: 700; }
+  .example::before { content: "✔ Пример: "; color: #7ee787; font-weight: 700; }
+  .anti::before    { content: "✘ Так НЕ надо: "; color: #ff7b72; font-weight: 700; }
+
+  /* ====== Навигация ====== */
+  .nav {
+    position: fixed;
+    top: 20px; right: 20px;
+    background: #161b22;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    max-width: 200px;
+    font-size: 0.85rem;
+  }
+  .nav a {
+    display: inline-block;
+    color: #58a6ff;
+    text-decoration: none;
+    margin: 3px 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    transition: background 0.15s, color 0.15s;
+    cursor: pointer;
+  }
+  .nav a:hover { background: #e94560; color: #fff; }
+
+  /* ====== Тост ====== */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%) translateY(120%);
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+    color: #fff;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.ok { background: #2ea043; }
+  #toast.err { background: #e94560; }
+
+  code {
+    color: #79c0ff;
+    font-family: 'Consolas', monospace;
+    background: rgba(110, 118, 129, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  ol, ul { margin-left: 24px; }
+  li { margin: 5px 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid #30363d;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: #161b22; color: #58a6ff; }
+
+  hr { border-color: #30363d; margin: 60px 0; }
+
+  /* Легенда */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: #161b22;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border: 1px solid #30363d;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+  }
+  .legend-mark {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .legend-mark.locked { background: #2a1f1f; color: #ff7b72; border: 1px solid #ff7b72; }
+  .legend-mark.copy   { background: #0f1a24; color: #58a6ff; border: 1px solid #58a6ff; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a data-scroll="s0">0. Введение</a>
+  <a data-scroll="s1">1. Структура</a>
+  <a data-scroll="s2">2. БД</a>
+  <a data-scroll="s3">3. Flask</a>
+  <a data-scroll="s4">4. Шаблоны</a>
+  <a data-scroll="s5">5. CSS</a>
+  <a data-scroll="s6">6. Запуск</a>
+  <a data-scroll="s7">7. Развитие</a>
+</div>
+
+<h1>🎬 Полное руководство: Flask-сайт с нуля</h1>
+
+<p>Мы соберём <b>динамический многостраничный сайт</b> «Киноподборщик»: пользователь отвечает на 6 вопросов, а сайт на основе его ответов подбирает жанр фильма и показывает 3 конкретных фильма.</p>
+
+<div class="legend">
+  <div class="legend-item">
+    <span class="legend-mark copy">📋 большой блок</span>
+    <span>кликни — скопируется в буфер</span>
+  </div>
+  <div class="legend-item">
+    <span class="legend-mark locked">🔒 маленький блок</span>
+    <span>напечатай руками — так запомнишь</span>
+  </div>
+</div>
+
+<div class="tip">
+<b>Логика такая:</b> большие куски кода (целые файлы, длинные функции) — <b>копируются кликом</b>, чтобы ты не тратил час на набор. А короткие, но важные фрагменты (1–5 строк) — <b>только руками</b>, потому что именно они запоминаются через пальцы.
+</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 0 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s0"><span class="step-num">0</span> Введение: как вообще работает сайт</h2>
+
+<div class="theory">
+<b>Что такое веб-приложение?</b><br>
+Это программа на сервере, которая принимает <b>HTTP-запросы</b> от браузера и возвращает <b>HTTP-ответы</b>.
+</div>
+
+<h3>0.1. Что происходит, когда ты открываешь сайт</h3>
+<div class="step">
+<ol>
+  <li>Вводишь адрес <code>http://127.0.0.1:5000/test</code>.</li>
+  <li>Браузер отправляет HTTP-запрос методом <b>GET</b>.</li>
+  <li>Flask ищет маршрут <code>/test</code> → вызывает функцию <code>test()</code>.</li>
+  <li>Функция читает из БД вопрос, собирает HTML, возвращает.</li>
+  <li>Браузер рисует страницу.</li>
+</ol>
+<div class="analogy">
+Ты (браузер) делаешь заказ официанту (Flask). Официант идёт на кухню (БД), берёт блюдо, оформляет на тарелке (шаблон) и приносит тебе.
+</div>
+</div>
+
+<h3>0.2. HTTP-методы: GET и POST</h3>
+<div class="theory">
+<b>GET</b> — «дай мне страницу». Данные в URL. Ничего не меняет.<br>
+<b>POST</b> — «прими данные». Данные в теле запроса. Меняет состояние.
+</div>
+
+<h3>0.3. Что такое Flask</h3>
+<div class="theory">
+<b>Flask</b> — микрофреймворк для Python. Даёт маршрутизацию, сессии, шаблоны, обработку ошибок. Всё остальное — подключается по желанию.
+</div>
+
+<h3>0.4. Декораторы</h3>
+<div class="theory">
+<b>Декоратор</b> — функция, оборачивающая другую функцию.
+<code>@app.route('/test')</code> над функцией означает: «зарегистрируй эту функцию как обработчик URL /test».
+</div>
+
+<h3>0.5. Сессии и cookie</h3>
+<div class="theory">
+HTTP не хранит состояние. Чтобы помнить — используют <b>cookie</b> и <b>сессии</b>.
+<b>Сессия во Flask</b> — это словарь, автоматически шифруемый в cookie. Хранит данные между запросами.
+</div>
+
+<div class="warn">
+Для работы <code>session</code> обязателен <code>SECRET_KEY</code>.
+</div>
+
+<h3>0.6. SQLite и SQL</h3>
+<div class="theory">
+<b>SQLite</b> — встраиваемая БД, вся в одном файле <code>movies.sqlite</code>. Не нужен сервер.
+<b>SQL</b> — язык запросов: CREATE TABLE, INSERT, SELECT, DELETE.
+</div>
+
+<h3>0.7. Jinja2</h3>
+<div class="theory">
+<b>Jinja2</b> — шаблонизатор во Flask.
+<code>{{ выражение }}</code> — вывести значение.<br>
+<code>{% команда %}</code> — цикл, условие, наследование.<br>
+<code>{# комментарий #}</code> — комментарий.
+</div>
+
+<h3>0.8. Архитектура: где чей код</h3>
+<table>
+<tr><th>Файл</th><th>Ответственность</th><th>Аналогия</th></tr>
+<tr><td><code>db_scripts.py</code></td><td>работа с БД</td><td>склад</td></tr>
+<tr><td><code>app.py</code></td><td>логика, маршруты</td><td>мозг + официант</td></tr>
+<tr><td><code>templates/*.html</code></td><td>представление</td><td>тарелки</td></tr>
+<tr><td><code>static/*.css</code></td><td>оформление</td><td>украшение</td></tr>
+</table>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 1 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s1"><span class="step-num">1</span> Структура проекта</h2>
+
+<div class="step">
+  <p>Создай такие папки и файлы (пока пустые):</p>
+  <div class="code-copy">movie_quiz/
+├── db_scripts.py
+├── app.py
+├── templates/
+│   ├── start.html
+│   ├── test.html
+│   └── result.html
+├── static/
+│   └── style_quiz.css
+└── guide.html</div>
+</div>
+
+<div class="theory">
+Flask по умолчанию ищет шаблоны в <code>templates/</code>, а статику — в <code>static/</code>.
+</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 2 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s2"><span class="step-num">2</span> База данных — <code>db_scripts.py</code></h2>
+
+<div class="theory">
+<b>Схема БД:</b> три таблицы.
+<ul>
+  <li><b>quizzes</b> — викторины (темы).</li>
+  <li><b>questions</b> — вопросы.</li>
+  <li><b>answers</b> — варианты ответов, у каждого — свой жанр.</li>
+</ul>
+Связь: один вопрос → много ответов.
+</div>
+
+<h3>2.1. Импорт и подключение</h3>
+
+<div class="theory">
+<b>Модуль <code>sqlite3</code></b> — стандартный в Python.
+<b><code>conn</code></b> — соединение. <b><code>cursor</code></b> — «рука» для запросов.
+</div>
+
+<p>Напечатай эти две строки — это основа:</p>
+<div class="code-btn">import sqlite3
+
+db_name = 'movies.sqlite'</div>
+
+<p>А <b>весь блок функций</b> для БД — можно скопировать кликом:</p>
+
+<div class="code-copy"># =============================================================
+#  db_scripts.py — создание и наполнение базы данных
+# =============================================================
+import sqlite3
+
+db_name = 'movies.sqlite'
+conn = None
+cursor = None
+
+
+def open():
+    """Открывает соединение с БД."""
+    global conn, cursor
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+
+def close():
+    """Закрывает соединение с БД."""
+    cursor.close()
+    conn.close()
+
+
+def do(query):
+    """Выполняет SQL-запрос и сохраняет изменения."""
+    cursor.execute(query)
+    conn.commit()
+
+
+def clear_db():
+    """Удаляет все таблицы, если они есть."""
+    open()
+    do('DROP TABLE IF EXISTS answers')
+    do('DROP TABLE IF EXISTS questions')
+    do('DROP TABLE IF EXISTS quizzes')
+    close()
+
+
+def create():
+    """Создаёт три таблицы: quizzes, questions, answers."""
+    open()
+    do('PRAGMA foreign_keys = on')
+
+    do('''CREATE TABLE IF NOT EXISTS quizzes (
+        id INTEGER PRIMARY KEY,
+        name VARCHAR,
+        description VARCHAR)''')
+
+    do('''CREATE TABLE IF NOT EXISTS questions (
+        id INTEGER PRIMARY KEY,
+        text VARCHAR)''')
+
+    do('''CREATE TABLE IF NOT EXISTS answers (
+        id INTEGER PRIMARY KEY,
+        question_id INTEGER,
+        text VARCHAR,
+        genre VARCHAR,
+        FOREIGN KEY (question_id) REFERENCES questions (id))''')
+    close()
+
+
+def add_quizzes():
+    """Добавляет три викторины."""
+    quizzes = [
+        ('Подбор фильма на вечер', 'Ответь на 5 вопросов — получи жанр'),
+        ('Что посмотреть с друзьями?', 'Комедия, боевик или что-то другое?'),
+        ('Романтический вечер', 'Подберём фильм для двоих'),
+    ]
+    open()
+    cursor.executemany(
+        'INSERT INTO quizzes (name, description) VALUES (?, ?)', quizzes)
+    conn.commit()
+    close()
+
+
+def add_questions():
+    """Добавляет 6 вопросов."""
+    questions = [
+        ('Какое у тебя сейчас настроение?',),
+        ('С кем будешь смотреть?',),
+        ('Сколько у тебя времени?',),
+        ('Что важнее — сюжет или картинка?',),
+        ('Хочешь ли ты посмеяться?',),
+        ('Готов ли ты поплакать?',),
+    ]
+    open()
+    cursor.executemany(
+        'INSERT INTO questions (text) VALUES (?)', questions)
+    conn.commit()
+    close()
+
+
+def add_answers():
+    """Добавляет варианты ответов с указанием жанра."""
+    answers = [
+        (1, 'Хочу приключений', 'adventure'),
+        (1, 'Хочу подумать', 'drama'),
+        (1, 'Хочу расслабиться', 'comedy'),
+        (1, 'Хочу пощекотать нервы', 'thriller'),
+        (2, 'Один', 'drama'),
+        (2, 'С друзьями', 'comedy'),
+        (2, 'С девушкой/парнем', 'romance'),
+        (2, 'С семьёй', 'family'),
+        (3, 'Меньше часа', 'short'),
+        (3, '1–2 часа', 'standard'),
+        (3, 'Хоть всю ночь', 'epic'),
+        (4, 'Сюжет', 'drama'),
+        (4, 'Картинка', 'action'),
+        (5, 'Да', 'comedy'),
+        (5, 'Нет', 'thriller'),
+        (6, 'Да', 'drama'),
+        (6, 'Нет', 'action'),
+    ]
+    open()
+    cursor.executemany(
+        'INSERT INTO answers (question_id, text, genre) VALUES (?, ?, ?)',
+        answers)
+    conn.commit()
+    close()
+
+
+def question_after(question_id):
+    """Возвращает все варианты ответа для вопроса."""
+    open()
+    query = '''
+    SELECT questions.id, questions.text, answers.text, answers.genre
+    FROM questions, answers
+    WHERE answers.question_id = questions.id
+      AND questions.id = ?
+    ORDER BY answers.id
+    '''
+    cursor.execute(query, [question_id])
+    result = cursor.fetchall()
+    close()
+    return result
+
+
+def first_question():
+    """Возвращает id первого вопроса."""
+    open()
+    cursor.execute('SELECT MIN(id) FROM questions')
+    result = cursor.fetchone()
+    close()
+    return result[0] if result else None
+
+
+def total_questions():
+    """Возвращает количество вопросов."""
+    open()
+    cursor.execute('SELECT COUNT(*) FROM questions')
+    result = cursor.fetchone()
+    close()
+    return result[0] if result else 0
+
+
+def show(table):
+    """Печатает содержимое таблицы (для отладки)."""
+    open()
+    cursor.execute('SELECT * FROM ' + table)
+    print(cursor.fetchall())
+    close()
+
+
+def show_tables():
+    show('questions')
+    show('answers')
+    show('quizzes')
+
+
+def main():
+    clear_db()
+    create()
+    add_quizzes()
+    add_questions()
+    add_answers()
+    show_tables()
+    print('\n=== База данных создана ===')
+    print('Всего вопросов:', total_questions())
+    print('Вопрос 1:', question_after(1))
+
+
+if __name__ == '__main__':
+    main()</div>
+
+<div class="think">
+Почему <code>('текст',)</code> — кортеж, а <code>('текст')</code> — просто строка?
+<br><small>(Ответ: кортеж из одного элемента требует запятую. Без неё Python считает это выражением в скобках.)</small>
+</div>
+
+<div class="check">
+  <b>✅ Проверь:</b> <code>python db_scripts.py</code>. Появится <code>movies.sqlite</code>, в консоли — список вопросов.
+</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 3 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s3"><span class="step-num">3</span> Flask-приложение — <code>app.py</code></h2>
+
+<div class="theory">
+<b>Маршрутизация</b> — сопоставление URL и функции через декоратор <code>@app.route</code>.
+</div>
+
+<h3>3.1. Импорты — напечатай сам</h3>
+<p>Всего 2 строки — но они важные, запомни:</p>
+<div class="code-btn">from flask import Flask, redirect, url_for, session, render_template, request
+from db_scripts import question_after, first_question, total_questions</div>
+
+<p><b>Весь остальной файл</b> — копируй кликом:</p>
+
+<div class="code-copy">from flask import Flask, redirect, url_for, session, render_template, request
+from db_scripts import question_after, first_question, total_questions
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'movie-secret-key'
+
+
+def get_genre_names():
+    return {
+        'comedy': '😂 Комедия',
+        'drama': '🎭 Драма',
+        'action': '💥 Боевик',
+        'thriller': '😱 Триллер',
+        'romance': '💕 Романтика',
+        'adventure': '🗺 Приключения',
+        'family': '👨‍👩‍👧 Семейный',
+        'short': '⏱ Короткометражка',
+        'standard': '🎬 Обычный фильм',
+        'epic': '🏔 Эпичное кино',
+    }
+
+
+def get_movies_by_genre():
+    return {
+        'comedy': ['Мальчишник в Вегасе', 'Один дома', 'Красный'],
+        'drama': ['Форрест Гамп', 'Зелёная миля', 'Список Шиндлера'],
+        'action': ['Джон Уик', 'Безумный Макс', 'Миссия невыполнима'],
+        'thriller': ['Семь', 'Молчание ягнят', 'Исчезнувшая'],
+        'romance': ['Дневник памяти', 'Ромео + Джульетта', 'Ла-Ла Ленд'],
+        'adventure': ['Индиана Джонс', 'Властелин колец', 'Пираты Карибского моря'],
+        'family': ['Гарри Поттер', 'Король Лев', 'Моана'],
+        'short': ['Пиксар-короткометражки', 'Ла-Луна', 'Бумажный человек'],
+        'standard': ['Начало', 'Остров проклятых', 'Престиж'],
+        'epic': ['Титаник', 'Аватар', 'Интерстеллар'],
+    }
+
+
+@app.route('/')
+def index():
+    session['genre_scores'] = {}
+    session['current_question'] = first_question()
+    session['answered'] = 0
+    session['total'] = total_questions()
+    return render_template('start.html')
+
+
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    if 'genre_scores' not in session:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        genre = request.form.get('genre')
+        scores = session.get('genre_scores', {})
+        scores[genre] = scores.get(genre, 0) + 1
+        session['genre_scores'] = scores
+        session['answered'] = session.get('answered', 0) + 1
+        session['current_question'] = session.get('current_question', 1) + 1
+
+    current_id = session.get('current_question')
+
+    if session.get('answered', 0) >= session.get('total', 0):
+        return redirect(url_for('result'))
+
+    options = question_after(current_id)
+    if not options:
+        return redirect(url_for('result'))
+
+    question_text = options[0][1]
+
+    seen = set()
+    unique_options = []
+    for row in options:
+        if row[2] not in seen:
+            seen.add(row[2])
+            unique_options.append({'text': row[2], 'genre': row[3]})
+
+    return render_template(
+        'test.html',
+        question=question_text,
+        options=unique_options,
+        progress=session.get('answered', 0),
+        total=session.get('total', 0),
+    )
+
+
+@app.route('/result')
+def result():
+    scores = session.get('genre_scores', {})
+    if not scores:
+        return redirect(url_for('index'))
+
+    winner = max(scores, key=scores.get)
+    genre_names = get_genre_names()
+    movies = get_movies_by_genre()
+
+    return render_template(
+        'result.html',
+        genre_name=genre_names.get(winner, winner),
+        movies=movies.get(winner, []),
+        scores={genre_names.get(k, k): v for k, v in scores.items()},
+    )
+
+
+@app.route('/restart')
+def restart():
+    session.clear()
+    return redirect(url_for('index'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)</div>
+
+<h3>3.2. Ключевые приёмы — напечатай сам</h3>
+
+<p><b>Приём 1.</b> Прибавить очко жанру:</p>
+<div class="code-btn">scores[genre] = scores.get(genre, 0) + 1</div>
+<div class="why">
+<code>.get(genre, 0)</code> — если жанра ещё нет в словаре, вернёт 0. Иначе — текущее число. Затем +1.
+</div>
+
+<p><b>Приём 2.</b> Найти победителя:</p>
+<div class="code-btn">winner = max(scores, key=scores.get)</div>
+<div class="why">
+<code>max</code> с <code>key</code> находит ключ словаря с максимальным значением.
+</div>
+
+<p><b>Приём 3.</b> Redirect после POST:</p>
+<div class="code-btn">return redirect(url_for('result'))</div>
+<div class="why">
+Паттерн Post/Redirect/Get: чтобы F5 не отправлял форму заново.
+</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 4 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s4"><span class="step-num">4</span> HTML-шаблоны (Jinja2)</h2>
+
+<div class="theory">
+<b>Зачем шаблоны?</b> HTML в отдельном файле, данные подставляются через <code>{{ }}</code>. Логика и вёрстка разделены.
+</div>
+
+<h3>4.1. <code>start.html</code> — копируй</h3>
+
+<div class="code-copy">&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='style_quiz.css') }}"&gt;
+    &lt;title&gt;Киноподборщик&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="card"&gt;
+    &lt;h1&gt;🎬 Подбор фильма на вечер&lt;/h1&gt;
+    &lt;p class="subtitle"&gt;Ответь на вопросы — и мы подберём идеальный фильм.&lt;/p&gt;
+    &lt;a href="{{ url_for('test') }}" class="btn"&gt;Начать подбор →&lt;/a&gt;
+    &lt;p class="hint"&gt;Всего вопросов: {{ session.get('total', '?') }}&lt;/p&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+<h3>4.2. <code>test.html</code> — копируй</h3>
+
+<div class="code-copy">&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='style_quiz.css') }}"&gt;
+    &lt;title&gt;Вопрос&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="card"&gt;
+    &lt;div class="progress"&gt;Вопрос {{ progress + 1 }} из {{ total }}&lt;/div&gt;
+    &lt;h2&gt;{{ question }}&lt;/h2&gt;
+
+    &lt;form method="POST" action="{{ url_for('test') }}"&gt;
+        {% for opt in options %}
+        &lt;button type="submit" name="genre" value="{{ opt.genre }}" class="option"&gt;
+            {{ opt.text }}
+        &lt;/button&gt;
+        {% endfor %}
+    &lt;/form&gt;
+
+    &lt;div class="score-hint"&gt;Прогресс: {{ progress }} / {{ total }}&lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+<h3>4.3. Ключевые приёмы — напечатай сам</h3>
+
+<p><b>Приём 1.</b> Ссылка через <code>url_for</code>:</p>
+<div class="code-btn">href="{{ url_for('test') }}"</div>
+
+<p><b>Приём 2.</b> Цикл в Jinja2:</p>
+<div class="code-btn">{% for opt in options %}
+    {{ opt.text }}
+{% endfor %}</div>
+
+<p><b>Приём 3.</b> Кнопка отправляет значение:</p>
+<div class="code-btn"><button type="submit" name="genre" value="{{ opt.genre }}"></div>
+
+<div class="think">
+Что будет, если убрать <code>name="genre"</code>?
+<br><small>(Ответ: <code>request.form.get('genre')</code> вернёт None, очки запишутся в мусорный ключ.)</small>
+</div>
+
+<h3>4.4. <code>result.html</code> — копируй</h3>
+
+<div class="code-copy">&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='style_quiz.css') }}"&gt;
+    &lt;title&gt;Результат&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="card"&gt;
+    &lt;h1&gt;🎉 Твой жанр на вечер:&lt;/h1&gt;
+    &lt;h2 class="genre"&gt;{{ genre_name }}&lt;/h2&gt;
+
+    &lt;h3&gt;Что посмотреть:&lt;/h3&gt;
+    &lt;ul class="movies"&gt;
+        {% for movie in movies %}
+        &lt;li&gt;{{ movie }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+
+    &lt;h3&gt;Твои ответы:&lt;/h3&gt;
+    &lt;ul class="scores"&gt;
+        {% for name, value in scores.items() %}
+        &lt;li&gt;{{ name }} — {{ value }} очков&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+
+    &lt;a href="{{ url_for('restart') }}" class="btn"&gt;Пройти заново 🔄&lt;/a&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 5 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s5"><span class="step-num">5</span> CSS — оформление</h2>
+
+<div class="theory">
+<b>CSS</b> — язык оформления. Селектор + правила в фигурных скобках.
+</div>
+
+<h3>5.1. <code>style_quiz.css</code> — копируй</h3>
+
+<div class="code-copy">* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eaeaea;
+  padding: 20px;
+}
+
+.card {
+  background: #0f3460;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+h1 { color: #e94560; margin-bottom: 12px; }
+h2 { margin: 20px 0; font-size: 1.4rem; }
+h3 { margin: 20px 0 10px; color: #9aa9c2; font-size: 1rem; }
+.subtitle { color: #9aa9c2; margin-bottom: 24px; }
+
+.btn {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 14px 32px;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn:hover { background: #ff5a75; transform: translateY(-2px); }
+
+.option {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 16px 20px;
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 10px;
+  color: #eaeaea;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.option:hover {
+  border-color: #e94560;
+  background: #1a2a4a;
+  transform: translateX(4px);
+}
+
+.progress {
+  color: #9aa9c2;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.score-hint {
+  margin-top: 20px;
+  color: #9aa9c2;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.genre { color: #e94560; font-size: 2rem; }
+
+.movies li, .scores li {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  list-style: none;
+}
+
+.hint {
+  margin-top: 16px;
+  color: #9aa9c2;
+  font-size: 0.85rem;
+}</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 6 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s6"><span class="step-num">6</span> Запуск и отладка</h2>
+
+<div class="step">
+<ol>
+  <li><code>pip install flask</code> — один раз.</li>
+  <li><code>python db_scripts.py</code> — один раз.</li>
+  <li><code>python app.py</code> — каждый раз для запуска.</li>
+  <li>Открыть <code>http://127.0.0.1:5000</code>.</li>
+</ol>
+</div>
+
+<div class="warn">
+<b>⚠ Симптом → причина:</b>
+<ul>
+  <li><b>«no such table»</b> — не запущен <code>db_scripts.py</code>.</li>
+  <li><b>«TemplateNotFound»</b> — файл не в <code>templates/</code>.</li>
+  <li><b>Session не работает</b> — нет <code>SECRET_KEY</code>.</li>
+  <li><b>Форма не отправляется</b> — нет <code>method="POST"</code>.</li>
+  <li><b>Результат не тот</b> — у кнопки <code>value="{{ opt.genre }}"</code>?</li>
+</ul>
+</div>
+
+<!-- ==================================================================== -->
+<!-- =========================== ШАГ 7 ================================== -->
+<!-- ==================================================================== -->
+<h2 id="s7"><span class="step-num">7</span> Идеи для развития</h2>
+
+<div class="step">
+<h4>🟢 Простое</h4>
+<ul>
+  <li>Свои вопросы в <code>db_scripts.py</code>.</li>
+  <li>Свои цвета в CSS.</li>
+</ul>
+<h4>🟡 Среднее</h4>
+<ul>
+  <li>Выбор викторины на старте (таблица <code>quizzes</code> уже есть).</li>
+  <li>Прогресс-бар на странице вопроса.</li>
+</ul>
+<h4>🔴 Сложное</h4>
+<ul>
+  <li>Фильмы в БД — новая таблица <code>movies</code>.</li>
+  <li>Регистрация пользователей и история.</li>
+</ul>
+</div>
+
+<hr>
+<p style="text-align:center;color:#8b949e">Собирай по шагам, читай теорию, задавай вопросы коду. Удачи! 🎬</p>
+
+<div id="toast">Готово</div>
+
+<script>
+(function () {
+  // =====================================================================
+  // Копирование разрешено ТОЛЬКО для .code-copy (больших блоков)
+  // .code-btn (маленькие) — заблокированы полностью
+  // =====================================================================
+
+  const blockKeys = ['c', 'C', 'a', 'A', 'x', 'X', 'u', 'U', 's', 'S', 'p', 'P'];
+
+  document.addEventListener('keydown', function (e) {
+    // Блокируем Ctrl/Cmd + C, A, X, U, S, P — но только вне .code-copy
+    const target = e.target.closest ? e.target.closest('.code-copy') : null;
+    if (!target && (e.ctrlKey || e.metaKey) && blockKeys.includes(e.key)) {
+      e.preventDefault();
+      showToast('Копирование только для больших блоков (📋) — маленькие печатай руками ✍️', 'err');
+      return false;
+    }
+    // F12 и devtools — блокируем всегда
+    if (e.key === 'F12' ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey &&
+         ['I','i','J','j','C','c'].includes(e.key))) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // ПКМ — разрешаем ТОЛЬКО на .code-copy
+  document.addEventListener('contextmenu', function (e) {
+    const target = e.target.closest ? e.target.closest('.code-copy') : null;
+    if (!target) {
+      e.preventDefault();
+      showToast('ПКМ отключено — работай как в учебнике 📖', 'err');
+      return false;
+    }
+  });
+
+  // Drag and drop — блокируем всегда
+  document.addEventListener('dragstart', function (e) {
+    e.preventDefault();
+  });
+
+  // Событие copy/cut — разрешаем, если выделение внутри .code-copy
+  document.addEventListener('copy', function (e) {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    const anchor = sel.anchorNode;
+    const node = anchor && anchor.nodeType === 3 ? anchor.parentElement : anchor;
+    if (!node || !node.closest || !node.closest('.code-copy')) {
+      e.preventDefault();
+      showToast('Копировать можно только большие блоки (📋) — маленькие печатай руками ✍️', 'err');
+    }
+  });
+  document.addEventListener('cut', function (e) {
+    e.preventDefault();
+  });
+
+  // selectstart — разрешаем только внутри .code-copy
+  document.addEventListener('selectstart', function (e) {
+    const target = e.target.closest ? e.target.closest('.code-copy') : null;
+    if (!target) {
+      e.preventDefault();
+    }
+  });
+
+  // =====================================================================
+  // Клик по .code-copy — копирует содержимое в буфер
+  // =====================================================================
+  document.querySelectorAll('.code-copy').forEach(function (block) {
+    block.addEventListener('click', async function (e) {
+      // Не мешаем, если пользователь просто выделяет текст
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) return;
+
+      const text = block.textContent.trimEnd();
+
+      try {
+        await navigator.clipboard.writeText(text);
+        block.classList.add('copied');
+        showToast('✅ Большой блок скопирован — вставляй в файл', 'ok');
+        setTimeout(() => block.classList.remove('copied'), 1500);
+      } catch (err) {
+        // Fallback для старых браузеров
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          block.classList.add('copied');
+          showToast('✅ Большой блок скопирован — вставляй в файл', 'ok');
+          setTimeout(() => block.classList.remove('copied'), 1500);
+        } catch (e2) {
+          showToast('Не удалось скопировать 😔', 'err');
+        }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  // =====================================================================
+  // Плавный скролл по навигации
+  // =====================================================================
+  document.querySelectorAll('.nav a[data-scroll]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const targetId = link.getAttribute('data-scroll');
+      const target = document.getElementById(targetId);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // =====================================================================
+  // Тост
+  // =====================================================================
+  let toastTimer = null;
+  function showToast(message, type) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.remove('ok', 'err');
+    toast.classList.add(type || 'ok');
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+  window.showToast = showToast;
+})();
+</script>
+
+</body>
+</html>
